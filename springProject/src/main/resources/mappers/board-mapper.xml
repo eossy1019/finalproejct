@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="boardMapper">
+  
+  <select id="selectListCount" resultType="_int">
+  	SELECT COUNT(*)
+  	FROM BOARD
+  	WHERE STATUS='Y'
+  </select>
+  
+  <select id="selectList" resultMap="boardResultSet">
+  	SELECT BOARD_NO,
+  		   BOARD_TITLE,
+  		   BOARD_WRITER,
+  		   ORIGIN_NAME,
+  		   CREATE_DATE
+  	FROM BOARD
+  	WHERE STATUS = 'Y'
+  	ORDER BY CREATE_DATE DESC
+  </select>
+  
+  <resultMap type="board" id="boardResultSet">
+  	<result column="BOARD_NO" property="boardNo"/>
+  	<result column="BOARD_TITLE" property="boardTitle"/>
+  	<result column="BOARD_WRITER" property="boardWriter"/>
+  	<result column="BOARD_CONTENT" property="boardContent"/>
+  	<result column="ORIGIN_NAME" property="originName"/>
+  	<result column="CHANGE_NAME" property="changeName"/>
+  	<result column="COUNT" property="count"/>
+  	<result column="CREATE_DATE" property="createDate"/>
+  	<result column="STATUS" property="status"/>
+  </resultMap>
+  
+  
+  <update id="increaseCount">
+  	UPDATE BOARD
+  	SET COUNT = COUNT+1
+  	WHERE BOARD_NO = #{boardNo}
+  	AND STATUS = 'Y'
+  </update>
+  
+  <!-- 게시글 하나 조회(detail) -->
+  <select id="detailBoard" resultMap="boardResultSet">
+   SELECT  BOARD_NO,
+		   BOARD_TITLE,
+		   BOARD_WRITER,
+		   ORIGIN_NAME,
+		   CHANGE_NAME,
+		   CREATE_DATE,
+		   COUNT,
+		   BOARD_CONTENT
+  	FROM BOARD
+  	WHERE STATUS = 'Y'
+  	AND BOARD_NO = #{boardNo}
+  	ORDER BY CREATE_DATE DESC
+  </select>
+  
+  <insert id="insertBoard">
+  	INSERT INTO BOARD(BOARD_NO,
+					   BOARD_TITLE,
+					   BOARD_WRITER,
+					   BOARD_CONTENT,
+					   ORIGIN_NAME,
+					   CHANGE_NAME)
+				VALUES(SEQ_BNO.NEXTVAL
+					  ,#{boardTitle}
+					  ,#{boardWriter}
+					  ,#{boardContent}
+					  ,#{originName}
+					  ,#{changeName})
+  </insert>
+  
+  <update id="updateBoard">
+  	UPDATE BOARD
+  	SET BOARD_TITLE = #{boardTitle}
+  	   ,BOARD_CONTENT = #{boardContent}
+  	   ,ORIGIN_NAME = #{originName}
+  	   ,CHANGE_NAME = #{changeName}
+  	 WHERE BOARD_NO = #{boardNo}
+  	 AND STATUS = 'Y'
+  </update>
+  
+  <update id="deleteBoard">
+  	UPDATE BOARD
+  	SET STATUS = 'N'
+  	WHERE BOARD_NO = #{boardNo}
+  	AND STATUS = 'Y'
+  </update>
+  
+  <select id="selectReplyList" resultMap="replyResultSet">
+  	SELECT *
+  	FROM REPLY
+  	WHERE REF_BNO = #{bno}
+  	AND STATUS ='Y'
+  </select>
+  
+  	<resultMap type="reply" id="replyResultSet">
+  		<result column="REPLY_NO"  property="replyNo"/>
+  		<result column="REPLY_CONTENT"  property="replyContent"/>
+  		<result column="REF_BNO"  property="refBno"/>
+  		<result column="REPLY_WRITER"  property="replyWriter"/>
+  		<result column="CREATE_DATE"  property="createDate"/>
+  	</resultMap>
+  
+   <insert id="insertReply">
+   		INSERT INTO REPLY(REPLY_NO,REPLY_CONTENT,REF_BNO,REPLY_WRITER)
+   					VALUES(SEQ_RNO.NEXTVAL
+   						 ,#{replyContent}
+   						 ,#{refBno}
+   						 ,#{replyWriter}
+   						 )
+   </insert>
+  
+  	<select id="topBoard" resultMap="boardResultSet">
+  		SELECT ROWNUM,A.*
+		FROM (SELECT   BOARD_NO,
+			  		   BOARD_TITLE,
+			  		   BOARD_WRITER,
+			  		   ORIGIN_NAME,
+			  		   CREATE_DATE,
+			           COUNT
+		  	FROM BOARD
+		  	WHERE STATUS = 'Y'
+		    ORDER BY COUNT DESC) A
+		WHERE ROWNUM BETWEEN 1 AND 5
+  	</select>
+  
+</mapper>
